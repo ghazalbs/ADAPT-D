@@ -12,6 +12,7 @@ import numpy as np
 from data_loader import (
     TRAJ_LABELS, TRAJ_COLORS, SHAP_TRAJ_MAP, COL_TO_SHAP_TRAJ, SHAP_TRAJ_DISPLAY,
 )
+from tabs.shared_components import tab_note
 
 # Domain colour palette (keyed by domain column value)
 DOMAIN_COLORS = {
@@ -257,6 +258,10 @@ def _generate_explanation(feat_df: pd.DataFrame, traj_label: str) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
+    tab_note(
+        "Shows the strongest model drivers for the selected synthetic patient and trajectory. "
+        "SHAP values explain prediction contribution, not causality."
+    )
     patient_ids = patients_df["dashboard_patient_id"].tolist()
     current_id  = st.session_state.get("selected_patient_id", patient_ids[0])
     if current_id not in patient_ids:

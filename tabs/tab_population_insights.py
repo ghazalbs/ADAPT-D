@@ -17,6 +17,8 @@ import pandas as pd
 import numpy as np
 import warnings
 
+from tabs.shared_components import tab_note
+
 # ─────────────────────────────────────────────────────────────────────────────
 # TRAJECTORY CONFIG
 # Edit here if trajectory column names change in dashboard_patients.csv
@@ -319,6 +321,11 @@ def _kpi(label: str, value: str, sub: str = "", color: str = "#2b6cb0") -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def render_tab_population_insights(df: pd.DataFrame) -> None:
+    tab_note(
+        "Shows average predicted trajectory probabilities across selected synthetic subgroups "
+        "for planning demonstration. These summaries are based only on the 100 synthetic prototype "
+        "patients and should not be interpreted as true population estimates."
+    )
     # ── Prepare data ──────────────────────────────────────────────────────────
     df = _prepare_data(df)
 

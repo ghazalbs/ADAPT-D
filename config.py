@@ -35,12 +35,18 @@ UNCERTAINTY_COLORS = {
 # SYSTEM STRINGS
 # ─────────────────────────────────────────────────────────────────────────────
 
-DASHBOARD_TITLE    = "Trajectory-Aware AI Decision Support for Dementia Discharge Planning"
-DASHBOARD_SUBTITLE = "Research Prototype · Post-Hospitalization Trajectory Prediction System"
+DASHBOARD_TITLE    = "ADAPT-D: ALC and Dementia Analytics for Predicted Trajectories and Destinations"
+DASHBOARD_SUBTITLE = "Trajectory-aware decision support for dementia discharge planning"
+# Short, secondary framing line shown in the hero header (not too dominant).
+MODEL_FRAMING = (
+    "Models developed from a large retrospective dementia cohort; "
+    "interactive dashboard displays synthetic prototype patients."
+)
 DISCLAIMER = (
-    "⚠️  Research Prototype — Synthetic Data Only.  "
-    "This dashboard is for academic demonstration purposes. "
-    "It has not been validated for clinical use."
+    "⚠️  Research prototype for academic demonstration. "
+    "The underlying predictive models were developed and evaluated on a large retrospective "
+    "dementia cohort; the interactive dashboard displays only 100 synthetic prototype patients. "
+    "Not prospectively validated and not for clinical deployment."
 )
 CLINICAL_CAUTION = (
     "This tool is intended to support — not replace — clinical judgment. "

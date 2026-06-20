@@ -12,6 +12,8 @@ import os
 import sys
 import streamlit as st
 import pandas as pd
+import plotly.io as pio
+import plotly.graph_objects as go
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE CONFIGURATION  (must be first Streamlit call)
@@ -26,8 +28,44 @@ st.set_page_config(
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from config import DASHBOARD_TITLE, DASHBOARD_SUBTITLE, DISCLAIMER
+from config import DASHBOARD_TITLE, DASHBOARD_SUBTITLE, DISCLAIMER, MODEL_FRAMING
 from data_loader import load_patients, load_shap, load_threshold_performance, load_fairness
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PLOTLY THEME — centralised light template for ALL charts
+# ─────────────────────────────────────────────────────────────────────────────
+# Every Plotly figure in this app inherits this template, so chart titles, axis
+# titles, tick labels, legends, and hover labels are forced dark-on-white and
+# stay readable regardless of the visitor's browser/OS dark-mode setting.
+# Individual figures may still override family/size; colours come from here.
+
+pio.templates["adaptd"] = go.layout.Template(
+    layout=go.Layout(
+        font=dict(color="#1a202c", family="Inter, 'Segoe UI', Arial, sans-serif"),
+        title=dict(font=dict(color="#1a202c")),
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff",
+        xaxis=dict(
+            title=dict(font=dict(color="#1a202c")),
+            tickfont=dict(color="#2d3748"),
+            linecolor="#cbd5e0",
+        ),
+        yaxis=dict(
+            title=dict(font=dict(color="#1a202c")),
+            tickfont=dict(color="#2d3748"),
+            linecolor="#cbd5e0",
+        ),
+        legend=dict(font=dict(color="#1a202c")),
+        hoverlabel=dict(
+            font=dict(color="#1a202c", family="Inter, 'Segoe UI', Arial, sans-serif"),
+            bgcolor="#ffffff",
+            bordercolor="#cbd5e0",
+        ),
+    )
+)
+# Compose on top of plotly_white (white background + light grid) so every chart
+# is consistently light with dark, legible text.
+pio.templates.default = "plotly_white+adaptd"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CUSTOM CSS — professional healthcare analytics look
@@ -54,8 +92,57 @@ html, body, [class*="css"] {
   font-weight: 400;
 }
 
-/* ── Page background ── */
+/* ── Page background — force light everywhere, ignore OS/browser dark mode ── */
+html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+  background-color: var(--clr-bg-page) !important;
+  color: var(--clr-text-primary) !important;
+}
 .main { background-color: var(--clr-bg-page); }
+.block-container { color: var(--clr-text-primary); }
+
+/* Default dark text for body copy, headings, markdown, captions, list items.
+   (Scoped to the main area so the navy sidebar below keeps its white text.) */
+[data-testid="stMain"] h1,
+[data-testid="stMain"] h2,
+[data-testid="stMain"] h3,
+[data-testid="stMain"] h4,
+[data-testid="stMain"] h5,
+[data-testid="stMain"] h6,
+[data-testid="stMain"] p,
+[data-testid="stMain"] li,
+[data-testid="stMain"] label,
+[data-testid="stMain"] .stMarkdown,
+[data-testid="stCaptionContainer"] {
+  color: var(--clr-text-primary) !important;
+}
+
+/* Widget labels (selectbox / slider / etc.) in the main area — keep dark */
+[data-testid="stMain"] [data-testid="stWidgetLabel"] label,
+[data-testid="stMain"] .stSelectbox label,
+[data-testid="stMain"] .stSlider label {
+  color: var(--clr-text-secondary) !important;
+}
+
+/* Selectbox / dropdown — dark text on white field */
+[data-testid="stMain"] div[data-baseweb="select"] > div {
+  background-color: var(--clr-bg-primary) !important;
+  color: var(--clr-text-primary) !important;
+}
+[data-testid="stMain"] div[data-baseweb="select"] * { color: var(--clr-text-primary) !important; }
+div[data-baseweb="popover"] li { color: var(--clr-text-primary) !important; }
+
+/* Dataframes / tables — dark text on white */
+[data-testid="stDataFrame"], [data-testid="stTable"] {
+  color: var(--clr-text-primary) !important;
+  background-color: var(--clr-bg-primary) !important;
+}
+[data-testid="stDataFrame"] * { color: var(--clr-text-primary); }
+
+/* Expander header text */
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary * { color: var(--clr-text-primary) !important; }
+
+/* ── Sidebar (intentionally navy with white text) ── */
 section[data-testid="stSidebar"] { background: #1a3a5c; }
 section[data-testid="stSidebar"] * { color: white !important; }
 section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important; }
@@ -87,6 +174,16 @@ section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important;
   border-color: #1a3a5c !important;
 }
 
+/* ── Sankey node labels — crisp dark text, no white halo/outline/shadow ── */
+.js-plotly-plot text.node-label,
+.js-plotly-plot .node-label,
+.js-plotly-plot .sankey text {
+  text-shadow: none !important;
+  stroke: none !important;
+  paint-order: normal !important;
+}
+.js-plotly-plot text.node-label { fill: #111827 !important; }
+
 /* ── Inputs ── */
 .stSelectbox > div > div { border-radius: 6px; }
 .stSlider { padding: 0; }
@@ -96,79 +193,128 @@ section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important;
 ::-webkit-scrollbar-track { background: var(--clr-bg-page); }
 ::-webkit-scrollbar-thumb { background: var(--clr-border); border-radius: 3px; }
 
-/* ── Dashboard header ── */
-.dash-header {
-  background: #1a3a5c;
+/* ── Hero header (full-bleed navy→blue gradient) ── */
+.stApp { overflow-x: hidden; }                 /* guard against 100vw scrollbar */
+
+.dash-hero {
+  position: relative;
+  overflow: hidden;
+  width: 100vw;
+  left: 50%;
+  margin-left: -50vw;
+  margin-top: -0.5rem;                          /* reach the very top edge */
+  margin-bottom: 1rem;
+  padding: 2.35rem clamp(1.5rem, 4vw, 3.25rem) 2.35rem;
   color: #ffffff;
-  padding: 0.85rem 1.75rem;
+  background: linear-gradient(115deg, #122c49 0%, #1b4068 46%, #2356a3 88%, #2563eb 120%);
+  box-shadow: 0 8px 22px rgba(18,44,73,0.22);
+}
+/* decorative circuit/network art — faint corner texture, never affects layout
+   (absolutely positioned, behind the row) and stays out of the badges' way */
+.dash-hero-art {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 26%;
+  opacity: 0.13;
+  pointer-events: none;
+}
+.dash-hero-row {
+  position: relative;
+  z-index: 1;                                   /* always above the decorative art */
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 0;
+  gap: 22px;
+  width: 100%;                                   /* span full hero width so badges
+                                                    anchor to the true right edge
+                                                    (no centred max-width cap) */
 }
-.dash-header-icon {
-  width: 38px; height: 38px;
-  background: rgba(255,255,255,0.12);
-  border-radius: 8px;
+.dash-hero-icon {
+  width: 74px; height: 74px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.11);
+  border: 1px solid rgba(255,255,255,0.24);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 3px 10px rgba(0,0,0,0.14);
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.35rem;
   flex-shrink: 0;
 }
-.dash-header-text { flex: 1; min-width: 0; }
-.dash-header-title {
-  font-size: 1.0rem;
-  font-weight: 500;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.dash-hero-text { flex: 1; min-width: 0; }
+.dash-hero-brand {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  line-height: 1.04;
+  margin: 0;
+  color: #ffffff;
 }
-.dash-header-subtitle {
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.58);
-  margin-top: 0.18rem;
+.dash-hero-fulltitle {
+  font-size: 1.06rem;
+  font-weight: 600;
+  color: #e8f1fb;
+  margin-top: 0.3rem;
+  line-height: 1.35;
+}
+.dash-hero-subtitle {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: #cfe2f8;
+  margin-top: 0.2rem;
+  font-weight: 500;
+}
+.dash-hero-framing {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.79rem;
+  color: rgba(233,241,251,0.78);
+  margin-top: 0.75rem;
   font-weight: 400;
 }
-.dash-header-badges {
+.dash-hero-framing svg { flex-shrink: 0; opacity: 0.85; }
+.dash-hero-badges {
   flex-shrink: 0;
+  margin-left: auto;                             /* push the stack to the far right */
+  padding-left: 1.5rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: stretch;                          /* equal-width pills = clean stack */
+  gap: 10px;
 }
-.dash-badge {
-  font-size: 0.67rem;
-  font-weight: 500;
-  padding: 2px 9px;
+.dash-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  justify-content: flex-start;
+  font-size: 0.79rem;
+  font-weight: 600;
+  padding: 7px 16px;
   border-radius: 9999px;
-  letter-spacing: 0.02em;
+  background: rgba(255,255,255,0.13);
+  border: 1px solid rgba(255,255,255,0.26);
+  color: #ffffff;
   white-space: nowrap;
 }
-.dash-badge-primary {
-  background: rgba(255,255,255,0.14);
-  color: rgba(255,255,255,0.78);
-}
-.dash-badge-secondary {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.50);
+.dash-pill svg { flex-shrink: 0; opacity: 0.92; }
+
+@media (max-width: 900px) {
+  .dash-hero-row { flex-direction: column; align-items: flex-start; }
+  .dash-hero-badges { flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
+  .dash-hero-brand { font-size: 1.85rem; }
+  .dash-hero-art { display: none; }
 }
 
-/* ── Alert bar ── */
+/* ── Amber research-prototype banner (compact, inset card) ── */
 .dash-alert-bar {
-  background: #fff8ec;
-  border-bottom: 1px solid #f5d98a;
-  padding: 0.4rem 1.75rem;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 0.9rem;
+  display: flex; align-items: flex-start; gap: 11px;
+  background: #fef7e6;
+  border: 1px solid #f3d68a;
+  border-radius: 10px;
+  padding: 0.75rem 1.15rem;
+  margin: 0 0 1rem 0;
 }
+.dash-alert-bar svg { flex-shrink: 0; margin-top: 1px; }
 .dash-alert-text {
-  color: #7a5500;
-  font-size: 0.76rem;
+  color: #6f5300;
+  font-size: 0.82rem;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.55;
 }
+.dash-alert-text strong { color: #5a4205; font-weight: 700; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -195,35 +341,89 @@ if "selected_patient_id" not in st.session_state:
 # HEADER
 # ─────────────────────────────────────────────────────────────────────────────
 
-_disclaimer_clean = DISCLAIMER.replace("⚠️", "").strip().lstrip("  ")
+# Split the full title into the brand ("ADAPT-D") and its descriptive expansion.
+_brand, _, _descriptor = DASHBOARD_TITLE.partition(": ")
+_descriptor = _descriptor or DASHBOARD_TITLE
+
+# Bold the first sentence of the disclaimer for the amber banner.
+_disclaimer_clean = DISCLAIMER.replace("⚠️", "").strip()
+_first, _sep, _rest = _disclaimer_clean.partition(". ")
+_banner_html = f"<strong>{_first}.</strong> {_rest}" if _sep else _disclaimer_clean
+
+# Reusable small SVG (white people glyph) for badges / framing line.
+_people_svg = (
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" '
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'
+    '<path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
+)
 
 st.markdown(f"""
-<div class="dash-header">
-  <div class="dash-header-icon">🧠</div>
-  <div class="dash-header-text">
-    <div class="dash-header-title">{DASHBOARD_TITLE}</div>
-    <div class="dash-header-subtitle">{DASHBOARD_SUBTITLE}</div>
-  </div>
-  <div class="dash-header-badges">
-    <span class="dash-badge dash-badge-primary">N = {len(df)} synthetic patients</span>
-    <span class="dash-badge dash-badge-secondary">Academic research prototype</span>
+<div class="dash-hero">
+  <svg class="dash-hero-art" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMid slice">
+    <g stroke="#ffffff" stroke-width="1" opacity="0.45">
+      <line x1="60" y1="40" x2="140" y2="70"/><line x1="140" y1="70" x2="120" y2="150"/>
+      <line x1="140" y1="70" x2="240" y2="50"/><line x1="240" y1="50" x2="320" y2="110"/>
+      <line x1="320" y1="110" x2="280" y2="180"/><line x1="240" y1="50" x2="352" y2="38"/>
+      <line x1="120" y1="150" x2="220" y2="160"/><line x1="220" y1="160" x2="320" y2="110"/>
+    </g>
+    <g fill="#ffffff" opacity="0.8">
+      <circle cx="60" cy="40" r="3"/><circle cx="140" cy="70" r="4"/><circle cx="240" cy="50" r="3.5"/>
+      <circle cx="320" cy="110" r="4"/><circle cx="120" cy="150" r="3"/><circle cx="220" cy="160" r="3.5"/>
+      <circle cx="352" cy="38" r="2.5"/><circle cx="280" cy="180" r="2.5"/>
+    </g>
+  </svg>
+  <div class="dash-hero-row">
+    <div class="dash-hero-icon">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+           stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <!-- brain hemisphere -->
+        <path d="M12 5a3 3 0 1 0-5.997.142 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"
+              fill="rgba(255,255,255,0.12)"/>
+        <!-- pathway connectors -->
+        <path d="M12 8h4"/><path d="M12 12h6"/><path d="M12 16h4"/>
+        <path d="M16 8V6.2A2 2 0 0 1 18 4.2"/><path d="M18 12h2.2"/>
+        <path d="M16 16v1.6a2 2 0 0 0 2 2"/>
+        <!-- pathway / trajectory nodes -->
+        <circle cx="16" cy="8" r="1.25" fill="#ffffff" stroke="none"/>
+        <circle cx="18" cy="12" r="1.25" fill="#ffffff" stroke="none"/>
+        <circle cx="16" cy="16" r="1.25" fill="#ffffff" stroke="none"/>
+        <circle cx="18.1" cy="4.2" r="1.25" fill="#ffffff" stroke="none"/>
+        <circle cx="20.4" cy="12" r="1.25" fill="#ffffff" stroke="none"/>
+        <circle cx="18" cy="19.7" r="1.25" fill="#ffffff" stroke="none"/>
+      </svg>
+    </div>
+    <div class="dash-hero-text">
+      <div class="dash-hero-brand">{_brand}</div>
+      <div class="dash-hero-fulltitle">{_descriptor}</div>
+      <div class="dash-hero-subtitle">{DASHBOARD_SUBTITLE}</div>
+      <div class="dash-hero-framing">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8f1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span>{MODEL_FRAMING}</span>
+      </div>
+    </div>
+    <div class="dash-hero-badges">
+      <span class="dash-pill">{_people_svg}N = {len(df)} synthetic patients</span>
+      <span class="dash-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5"/>
+        </svg>Academic research prototype</span>
+      <span class="dash-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>Privacy-preserving demonstration</span>
+    </div>
   </div>
 </div>
 <div class="dash-alert-bar">
-  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-    <circle cx="4" cy="10" r="2" fill="#7a5500"/>
-    <line x1="6" y1="10" x2="10" y2="10" stroke="#7a5500" stroke-width="1.5"/>
-    <line x1="10" y1="10" x2="16" y2="5" stroke="#7a5500" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="10" y1="10" x2="16" y2="15" stroke="#7a5500" stroke-width="1.5" stroke-linecap="round"/>
-    <circle cx="16" cy="5" r="2" fill="#7a5500"/>
-    <circle cx="16" cy="15" r="2" fill="#7a5500"/>
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
   </svg>
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7a5500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-    <line x1="12" y1="9" x2="12" y2="13"/>
-    <line x1="12" y1="17" x2="12.01" y2="17"/>
-  </svg>
-  <span class="dash-alert-text">{_disclaimer_clean}</span>
+  <span class="dash-alert-text">{_banner_html}</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -232,6 +432,7 @@ st.markdown(f"""
 # ─────────────────────────────────────────────────────────────────────────────
 
 tab_labels = [
+    "ℹ️ About / How to interpret",
     "👥 Population insights",
     "🧑‍⚕️ Patient risk summary",
     "🔍 Key drivers",
@@ -240,8 +441,9 @@ tab_labels = [
     "📈 Model performance",
 ]
 
-(tab_pop, tab1, tab3, tab4, tab7, tab8) = st.tabs(tab_labels)
+(tab_about, tab_pop, tab1, tab3, tab4, tab7, tab8) = st.tabs(tab_labels)
 
+from tabs.tab_about              import render_tab_about
 from tabs.tab_population_insights import render_tab_population_insights
 from tabs.tab1_patient_risk       import render_tab1
 from tabs.tab3_explainability     import render_tab3
@@ -249,9 +451,10 @@ from tabs.tab4_decision_support   import render_tab4
 from tabs.tab7_equity_monitoring  import render_tab7
 from tabs.tab8_model_performance  import render_tab8
 
-with tab_pop: render_tab_population_insights(patients_df)
-with tab1:    render_tab1(patients_df)
-with tab3:    render_tab3(patients_df, shap_df)
-with tab4:    render_tab4(patients_df)
-with tab7:    render_tab7(patients_df, fairness_df)
-with tab8:    render_tab8(threshold_df)
+with tab_about: render_tab_about(n_patients=len(df))
+with tab_pop:   render_tab_population_insights(patients_df)
+with tab1:      render_tab1(patients_df)
+with tab3:      render_tab3(patients_df, shap_df)
+with tab4:      render_tab4(patients_df)
+with tab7:      render_tab7(patients_df, fairness_df)
+with tab8:      render_tab8(threshold_df)

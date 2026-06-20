@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
-from tabs.shared_components import kpi_card as _kpi_card
+from tabs.shared_components import kpi_card as _kpi_card, tab_note
 
 # Ordered display list (for selectbox)
 MODEL_LABEL_ORDER = [
@@ -159,6 +159,10 @@ def _nearest_row(df: pd.DataFrame, threshold: float) -> pd.Series:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def render_tab8(threshold_df: pd.DataFrame):
+    tab_note(
+        "Summarizes model performance from the underlying model development and evaluation "
+        "analyses. These results are not calculated from the 100 synthetic dashboard patients."
+    )
     available_models = threshold_df["model_short"].unique().tolist()
     model_opts = [m for m in MODEL_LABEL_ORDER if m in available_models] + \
                  [m for m in available_models if m not in MODEL_LABEL_ORDER]

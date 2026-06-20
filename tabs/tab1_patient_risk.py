@@ -12,6 +12,7 @@ import io
 
 from config import RISK_COLORS, UNCERTAINTY_COLORS, CLINICAL_CAUTION
 from data_loader import TRAJ_COLS, TRAJ_LABELS, TRAJ_COLORS
+from tabs.shared_components import tab_note
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS
@@ -174,6 +175,8 @@ def _sankey(patient: pd.Series) -> go.Figure:
 
     fig = go.Figure(go.Sankey(
         arrangement="snap",
+        # Dark, crisp node labels (halo/outline removed via CSS in app.py)
+        textfont=dict(color="#111827", size=12, family="Inter, Arial, sans-serif"),
         node=dict(
             pad=18, thickness=22,
             line=dict(width=0),
@@ -299,6 +302,9 @@ def _export_csv(patient: pd.Series) -> bytes:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def render_tab1(df: pd.DataFrame):
+    tab_note(
+        "Shows predicted trajectory probabilities for one selected synthetic prototype patient."
+    )
     patient_ids = df["dashboard_patient_id"].tolist()
 
     col_sel, col_btn = st.columns([3, 1])

@@ -9,6 +9,7 @@ import pandas as pd
 
 from config import UNCERTAINTY_COLORS, CLINICAL_CAUTION, TRAJ_LABEL_COLORS_4
 from data_loader import TRAJ_COLORS
+from tabs.shared_components import tab_note
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PLANNING PROMPT DEFINITIONS
@@ -156,6 +157,11 @@ def _prompt_card(icon, title, items, color):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def render_tab4(df: pd.DataFrame):
+    tab_note(
+        "Translates the selected synthetic prototype patient's predicted trajectory into structured "
+        "planning prompts. These are decision-support considerations, not automated clinical "
+        "recommendations, and should be interpreted with clinical judgment."
+    )
     patient_ids = df["dashboard_patient_id"].tolist()
     current_id  = st.session_state.get("selected_patient_id", patient_ids[0])
     if current_id not in patient_ids:

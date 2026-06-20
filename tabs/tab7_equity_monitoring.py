@@ -9,6 +9,8 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
+from tabs.shared_components import tab_note
+
 # Parity thresholds for flagging disparities
 PARITY_LO = 0.90   # below this → flag (under-performance)
 PARITY_HI = 1.10   # above this → flag (over-performance relative to reference)
@@ -135,6 +137,10 @@ def _high_need_rate_chart(patients_df: pd.DataFrame, dim: str) -> go.Figure:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def render_tab7(patients_df: pd.DataFrame, fairness_df: pd.DataFrame):
+    tab_note(
+        "Summarizes subgroup fairness, calibration, and reliability patterns from the underlying "
+        "evaluation analyses to support model governance."
+    )
     # ── Selectors ─────────────────────────────────────────────────────────────
     available_models = fairness_df["model_short"].unique().tolist()
     model_opts = [m for m in MODEL_LABEL_ORDER if m in available_models] + \
@@ -351,7 +357,10 @@ def render_tab7(patients_df: pd.DataFrame, fairness_df: pd.DataFrame):
         'box-shadow:0 2px 8px rgba(0,0,0,0.08);">'
         '<div style="font-size:0.78rem;font-weight:700;color:#2d3748;'
         'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">'
-        'Predicted ALC High-Need Rate by Subgroup (prototype cohort)</div>',
+        'Predicted ALC High-Need Rate by Subgroup</div>'
+        '<div style="font-size:0.72rem;color:#a0aec0;margin-bottom:6px;">'
+        'Based only on the 100 synthetic prototype patients — illustrative, not a real '
+        'population rate.</div>',
         unsafe_allow_html=True,
     )
     fig_hn = _high_need_rate_chart(patients_df, hn_dim)
@@ -372,7 +381,9 @@ def render_tab7(patients_df: pd.DataFrame, fairness_df: pd.DataFrame):
         'model performance between the equity-seeking group and the reference group. '
         'Ratios outside 0.90–1.10 may signal meaningful performance disparities and should '
         'be reviewed by clinical informatics, ethics, and equity teams before deployment. '
-        'These metrics are derived from a synthetic prototype dataset.'
+        'The parity, calibration, and reliability metrics on this tab are summarised from the '
+        'underlying model development and evaluation analyses — not from the 100 synthetic '
+        'prototype patients shown elsewhere in the dashboard.'
         '</p></div>',
         unsafe_allow_html=True,
     )

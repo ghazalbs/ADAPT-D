@@ -1,3 +1,14 @@
+[theme]
+# Fixed light theme — do NOT follow the browser/OS dark-mode preference.
+# This guarantees a consistent, readable light background with dark text
+# across the whole dashboard regardless of the visitor's system settings.
+base = "light"
+backgroundColor = "#F7F9FC"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#111827"
+primaryColor = "#2563EB"
+font = "sans serif"
+
 [server]
 headless = true
 enableCORS = false

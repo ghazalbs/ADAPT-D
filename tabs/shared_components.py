@@ -1,5 +1,24 @@
 """tabs/shared_components.py — Shared UI utilities used across active tabs."""
 
+import streamlit as st
+
+
+def tab_note(text: str) -> None:
+    """
+    Renders a consistent, high-contrast "how to interpret" note at the top of a tab.
+
+    Light blue panel with dark navy text so it stays readable on the fixed light
+    theme. Use one short sentence describing what the tab shows and how to read it.
+    """
+    st.markdown(
+        f'<div style="background:#eff6ff;border:1px solid #bfdbfe;'
+        f'border-left:4px solid #2563eb;border-radius:0 8px 8px 0;'
+        f'padding:0.65rem 1rem;margin-bottom:1rem;">'
+        f'<p style="font-size:0.83rem;color:#1e3a5f;margin:0;line-height:1.55;">'
+        f'ℹ️&nbsp; {text}</p></div>',
+        unsafe_allow_html=True,
+    )
+
 
 def kpi_card(label: str, value: str, sub: str = "", color: str = "#2b6cb0") -> str:
     """
