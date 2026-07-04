@@ -30,6 +30,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config import DASHBOARD_TITLE, DASHBOARD_SUBTITLE, DISCLAIMER, MODEL_FRAMING
 from data_loader import load_patients, load_shap, load_threshold_performance, load_fairness
+from banner_asset import BANNER_DATA_URI  # hero banner artwork (base64 data URI)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PLOTLY THEME — centralised light template for ALL charts
@@ -359,40 +360,53 @@ _people_svg = (
 )
 
 st.markdown(f"""
+<style>
+/* Hero banner artwork (Higgsfield, 21:5) layered under a left scrim so the
+   text column stays readable. The banner's brain/pathway art begins ~37% from
+   the left, so text is confined to the dark left zone and badges to the
+   lower-left; the prior inline SVG art + brain-icon tile are dropped (the
+   banner now carries that imagery). */
+.dash-hero {{
+  background:
+    linear-gradient(90deg, rgba(9,19,35,0.94) 0%, rgba(9,19,35,0.86) 30%,
+                    rgba(9,19,35,0.34) 47%, rgba(9,19,35,0) 62%),
+    url({BANNER_DATA_URI}) center / cover no-repeat,
+    linear-gradient(115deg, #122c49 0%, #1b4068 46%, #2356a3 88%, #2563eb 120%);
+  min-height: 220px;
+}}
+.dash-hero-row {{
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 176px;
+}}
+.dash-hero-text {{ flex: none; max-width: 36%; }}
+.dash-hero-brand {{ text-shadow: 0 1px 12px rgba(6,16,30,0.92); }}
+.dash-hero-fulltitle,
+.dash-hero-subtitle,
+.dash-hero-framing {{ text-shadow: 0 1px 9px rgba(6,16,30,0.94); }}
+.dash-hero-badges {{
+  margin-left: 0;
+  padding-left: 0;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 62%;
+}}
+.dash-pill {{
+  background: rgba(9,20,36,0.58);
+  border: 1px solid rgba(103,232,249,0.30);
+  backdrop-filter: blur(3px);
+}}
+@media (max-width: 900px) {{
+  .dash-hero-text {{ max-width: 100%; }}
+  .dash-hero-badges {{ max-width: 100%; }}
+}}
+</style>
 <div class="dash-hero">
-  <svg class="dash-hero-art" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMid slice">
-    <g stroke="#ffffff" stroke-width="1" opacity="0.45">
-      <line x1="60" y1="40" x2="140" y2="70"/><line x1="140" y1="70" x2="120" y2="150"/>
-      <line x1="140" y1="70" x2="240" y2="50"/><line x1="240" y1="50" x2="320" y2="110"/>
-      <line x1="320" y1="110" x2="280" y2="180"/><line x1="240" y1="50" x2="352" y2="38"/>
-      <line x1="120" y1="150" x2="220" y2="160"/><line x1="220" y1="160" x2="320" y2="110"/>
-    </g>
-    <g fill="#ffffff" opacity="0.8">
-      <circle cx="60" cy="40" r="3"/><circle cx="140" cy="70" r="4"/><circle cx="240" cy="50" r="3.5"/>
-      <circle cx="320" cy="110" r="4"/><circle cx="120" cy="150" r="3"/><circle cx="220" cy="160" r="3.5"/>
-      <circle cx="352" cy="38" r="2.5"/><circle cx="280" cy="180" r="2.5"/>
-    </g>
-  </svg>
   <div class="dash-hero-row">
-    <div class="dash-hero-icon">
-      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-           stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <!-- brain hemisphere -->
-        <path d="M12 5a3 3 0 1 0-5.997.142 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"
-              fill="rgba(255,255,255,0.12)"/>
-        <!-- pathway connectors -->
-        <path d="M12 8h4"/><path d="M12 12h6"/><path d="M12 16h4"/>
-        <path d="M16 8V6.2A2 2 0 0 1 18 4.2"/><path d="M18 12h2.2"/>
-        <path d="M16 16v1.6a2 2 0 0 0 2 2"/>
-        <!-- pathway / trajectory nodes -->
-        <circle cx="16" cy="8" r="1.25" fill="#ffffff" stroke="none"/>
-        <circle cx="18" cy="12" r="1.25" fill="#ffffff" stroke="none"/>
-        <circle cx="16" cy="16" r="1.25" fill="#ffffff" stroke="none"/>
-        <circle cx="18.1" cy="4.2" r="1.25" fill="#ffffff" stroke="none"/>
-        <circle cx="20.4" cy="12" r="1.25" fill="#ffffff" stroke="none"/>
-        <circle cx="18" cy="19.7" r="1.25" fill="#ffffff" stroke="none"/>
-      </svg>
-    </div>
     <div class="dash-hero-text">
       <div class="dash-hero-brand">{_brand}</div>
       <div class="dash-hero-fulltitle">{_descriptor}</div>
