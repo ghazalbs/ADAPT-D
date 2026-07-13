@@ -189,11 +189,11 @@ def render_tab4(df: pd.DataFrame):
     st.markdown(
         f'<div style="background:white;border-radius:10px;padding:1rem 1.3rem;'
         f'box-shadow:0 2px 8px rgba(0,0,0,0.08);border-left:4px solid {traj_color};">'
-        f'<div style="font-size:0.75rem;font-weight:600;color:#718096;'
+        f'<div style="font-size:0.75rem;font-weight:600;color:#5f6b78;'
         f'text-transform:uppercase;letter-spacing:0.06em;">Patient {selected_id} — Planning Support</div>'
         f'<div style="font-size:1rem;font-weight:700;color:#1a365d;margin-top:3px;">'
         f'Predicted: {top1} &nbsp;·&nbsp; '
-        f'<span style="font-size:0.85rem;font-weight:400;color:#718096;">'
+        f'<span style="font-size:0.85rem;font-weight:400;color:#5f6b78;">'
         f'P = {prob:.0%} &nbsp;|&nbsp; Risk Band: {risk}</span></div></div>',
         unsafe_allow_html=True,
     )
@@ -218,9 +218,9 @@ def render_tab4(df: pd.DataFrame):
         if top1 in PLANNING_PROMPTS:
             entry = PLANNING_PROMPTS[top1]
             st.markdown(
-                f'<div style="font-size:0.8rem;font-weight:700;color:#2d3748;'
+                f'<h2 style="font-size:0.8rem;font-weight:700;color:#2d3748;'
                 f'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.6rem;">'
-                f'Primary Pathway Planning Considerations</div>'
+                f'Primary Pathway Planning Considerations</h2>'
                 f'<div style="background:#f7fafc;border-radius:8px;padding:0.75rem 1rem;'
                 f'margin-bottom:0.75rem;font-size:0.84rem;color:#4a5568;font-style:italic;">'
                 f'{entry["intro"]}</div>',
@@ -264,9 +264,9 @@ def render_tab4(df: pd.DataFrame):
         if top2 in PLANNING_PROMPTS and top2 != top1:
             entry2 = PLANNING_PROMPTS[top2]
             st.markdown(
-                f'<div style="font-size:0.8rem;font-weight:700;color:#2d3748;'
+                f'<h2 style="font-size:0.8rem;font-weight:700;color:#2d3748;'
                 f'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.6rem;">'
-                f'Also Consider (2nd Trajectory)</div>',
+                f'Also Consider (2nd Trajectory)</h2>',
                 unsafe_allow_html=True,
             )
             st.markdown(
@@ -274,7 +274,7 @@ def render_tab4(df: pd.DataFrame):
                 f'margin-bottom:0.6rem;border-left:3px solid {entry2["color"]};">'
                 f'<span style="font-size:0.82rem;font-weight:600;color:{entry2["color"]};">'
                 f'{entry2["icon"]} {top2}</span>'
-                f'<span style="font-size:0.78rem;color:#718096;"> (P = {patient["top2_prob"]:.0%})</span>'
+                f'<span style="font-size:0.78rem;color:#5f6b78;"> (P = {patient["top2_prob"]:.0%})</span>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -284,7 +284,7 @@ def render_tab4(df: pd.DataFrame):
                     f'margin-bottom:0.5rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);'
                     f'border-left:2px solid {entry2["color"]}40;">'
                     f'<div style="font-size:0.8rem;font-weight:600;color:#4a5568;">{name}</div>'
-                    f'<div style="font-size:0.78rem;color:#718096;margin-top:2px;">{desc}</div>'
+                    f'<div style="font-size:0.78rem;color:#5f6b78;margin-top:2px;">{desc}</div>'
                     f'</div>',
                     unsafe_allow_html=True,
                 )

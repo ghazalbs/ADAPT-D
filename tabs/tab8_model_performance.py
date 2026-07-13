@@ -206,9 +206,9 @@ def render_tab8(threshold_df: pd.DataFrame):
     st.markdown(
         '<div style="background:white;border-radius:10px;padding:1.3rem;'
         'box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:1rem;">'
-        '<div style="font-size:0.8rem;font-weight:700;color:#2d3748;'
+        '<h2 style="font-size:0.8rem;font-weight:700;color:#2d3748;'
         'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.6rem;">'
-        'Interactive Threshold Analysis</div>'
+        'Interactive Threshold Analysis</h2>'
         '<div style="font-size:0.82rem;color:#4a5568;margin-bottom:0.8rem;">'
         'Adjust the decision threshold to see how recall, specificity, precision, and '
         'the number of flagged patients change. Lower thresholds capture more high-risk '
@@ -244,7 +244,7 @@ def render_tab8(threshold_df: pd.DataFrame):
 
     if "predicted_positive_pct" in row.index:
         st.markdown(
-            f'<p style="font-size:0.76rem;color:#718096;margin-top:6px;">'
+            f'<p style="font-size:0.76rem;color:#5f6b78;margin-top:6px;">'
             f'At threshold {float(row["threshold"]):.2f}, '
             f'<strong>{float(row.get("predicted_positive_pct", 0)):.1f}%</strong> '
             f'of patients are flagged as positive.</p>',

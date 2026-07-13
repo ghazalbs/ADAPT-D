@@ -31,7 +31,7 @@ def kpi_card(label: str, value: str, sub: str = "", color: str = "#2b6cb0") -> s
         color: Accent colour for the top border stripe.
     """
     sub_html = (
-        f"<div style='font-size:0.71rem;color:#a0aec0;margin-top:2px;'>{sub}</div>"
+        f"<div style='font-size:0.71rem;color:#64748b;margin-top:2px;'>{sub}</div>"
         if sub else ""
     )
     return f"""
@@ -39,7 +39,7 @@ def kpi_card(label: str, value: str, sub: str = "", color: str = "#2b6cb0") -> s
                 box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;
                 border-top:3px solid {color};">
       <div style="font-size:1.7rem;font-weight:700;color:#1a365d;line-height:1.2;">{value}</div>
-      <div style="font-size:0.73rem;font-weight:600;color:#718096;
+      <div style="font-size:0.73rem;font-weight:600;color:#5f6b78;
                   text-transform:uppercase;letter-spacing:0.05em;margin-top:3px;">{label}</div>
       {sub_html}
     </div>"""

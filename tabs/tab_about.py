@@ -25,8 +25,8 @@ def _section(title: str, body_html: str, accent: str = "#2563eb") -> None:
         f'<div style="background:#ffffff;border:1px solid #e2e8f0;'
         f'border-left:4px solid {accent};border-radius:8px;'
         f'padding:1.1rem 1.4rem;margin-bottom:1rem;">'
-        f'<div style="font-size:1.0rem;font-weight:700;color:{_HEADING};'
-        f'margin-bottom:0.5rem;">{title}</div>'
+        f'<h3 style="font-size:1.0rem;font-weight:700;color:{_HEADING};'
+        f'margin-bottom:0.5rem;">{title}</h3>'
         f'<div style="font-size:0.88rem;color:{_BODY};line-height:1.7;">'
         f'{body_html}</div></div>',
         unsafe_allow_html=True,
@@ -38,8 +38,8 @@ def render_tab_about(n_patients: int = 100) -> None:
     st.markdown(
         f'<div style="background:linear-gradient(135deg,#1a3a5c,#2b5378);'
         f'border-radius:10px;padding:1.3rem 1.6rem;margin-bottom:1.2rem;color:#ffffff;">'
-        f'<div style="font-size:1.15rem;font-weight:700;margin-bottom:0.3rem;">'
-        f'About this dashboard &nbsp;·&nbsp; How to interpret it</div>'
+        f'<h2 style="font-size:1.15rem;font-weight:700;margin-bottom:0.3rem;color:#ffffff;">'
+        f'About this dashboard &nbsp;·&nbsp; How to interpret it</h2>'
         f'<div style="font-size:0.9rem;color:#dbe7f3;line-height:1.65;">'
         f'ADAPT-D (ALC and Dementia Analytics for Predicted Trajectories and Destinations) '
         f'is a research prototype. Please read this page before interpreting the other tabs.'
@@ -69,8 +69,8 @@ def render_tab_about(n_patients: int = 100) -> None:
         f'<div style="background:#fffbeb;border:1px solid #f6d98a;'
         f'border-left:4px solid #d69e2e;border-radius:8px;'
         f'padding:1.1rem 1.4rem;margin-bottom:1rem;">'
-        f'<div style="font-size:1.0rem;font-weight:700;color:#744210;'
-        f'margin-bottom:0.5rem;">An important distinction</div>'
+        f'<h3 style="font-size:1.0rem;font-weight:700;color:#744210;'
+        f'margin-bottom:0.5rem;">An important distinction</h3>'
         f'<ul style="font-size:0.88rem;color:#5b4410;line-height:1.7;margin:0;padding-left:1.1rem;">'
         f'<li>The predictive models were <strong>trained and evaluated using a large dementia '
         f'cohort</strong>.</li>'
@@ -105,8 +105,8 @@ def render_tab_about(n_patients: int = 100) -> None:
 
     # ── Per-tab interpretation ────────────────────────────────────────────────
     st.markdown(
-        f'<div style="font-size:1.05rem;font-weight:700;color:{_HEADING};'
-        f'margin:0.6rem 0 0.8rem 0;">How to interpret each tab</div>',
+        f'<h2 style="font-size:1.05rem;font-weight:700;color:{_HEADING};'
+        f'margin:0.6rem 0 0.8rem 0;">How to interpret each tab</h2>',
         unsafe_allow_html=True,
     )
 
@@ -187,8 +187,8 @@ def render_tab_about(n_patients: int = 100) -> None:
         f'<div style="background:#fff5f5;border:1px solid #fbcaca;'
         f'border-left:4px solid #c0392b;border-radius:8px;'
         f'padding:1.1rem 1.4rem;margin-top:0.4rem;">'
-        f'<div style="font-size:1.0rem;font-weight:700;color:#9b2c2c;'
-        f'margin-bottom:0.4rem;">Important research prototype disclaimer</div>'
+        f'<h3 style="font-size:1.0rem;font-weight:700;color:#9b2c2c;'
+        f'margin-bottom:0.4rem;">Important research prototype disclaimer</h3>'
         f'<p style="font-size:0.88rem;color:#742a2a;line-height:1.7;margin:0;">'
         f'ADAPT-D is intended for academic demonstration and knowledge translation. It has '
         f'<strong>not been prospectively validated for clinical deployment</strong>. It should not '

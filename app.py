@@ -79,7 +79,8 @@ st.markdown("""
   color-scheme: light;
   --clr-text-primary:   #1a202c;
   --clr-text-secondary: #4a5568;
-  --clr-text-muted:     #718096;
+  --clr-text-muted:     #5f6b78;   /* AA-compliant on white (5.4:1) — was #718096 (4.0:1) */
+  --clr-text-hint:      #64748b;   /* AA-compliant tertiary (4.8:1 white) */
   --clr-bg-primary:     #ffffff;
   --clr-bg-secondary:   #f7fafc;
   --clr-bg-page:        #f0f4f8;
@@ -101,20 +102,28 @@ html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
 .main { background-color: var(--clr-bg-page); }
 .block-container { color: var(--clr-text-primary); }
 
-/* Default dark text for body copy, headings, markdown, captions, list items.
+/* Default dark text for body copy, markdown, captions, list items.
    (Scoped to the main area so the navy sidebar below keeps its white text.) */
-[data-testid="stMain"] h1,
-[data-testid="stMain"] h2,
-[data-testid="stMain"] h3,
-[data-testid="stMain"] h4,
-[data-testid="stMain"] h5,
-[data-testid="stMain"] h6,
 [data-testid="stMain"] p,
 [data-testid="stMain"] li,
 [data-testid="stMain"] label,
 [data-testid="stMain"] .stMarkdown,
 [data-testid="stCaptionContainer"] {
   color: var(--clr-text-primary) !important;
+}
+/* Headings: default dark, but WITHOUT !important so hand-authored inline colours
+   (white hero title, coloured card eyebrows) win. No native markdown headings
+   exist in this app, so this only affects headings we inject. margin reset keeps
+   converted div→heading titles visually identical. */
+[data-testid="stMain"] h1,
+[data-testid="stMain"] h2,
+[data-testid="stMain"] h3,
+[data-testid="stMain"] h4,
+[data-testid="stMain"] h5,
+[data-testid="stMain"] h6 {
+  color: var(--clr-text-primary);
+  margin: 0;
+  font-family: inherit;
 }
 
 /* Widget labels (selectbox / slider / etc.) in the main area — keep dark */
@@ -185,6 +194,23 @@ section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important;
 }
 .js-plotly-plot text.node-label { fill: #111827 !important; }
 
+/* ── Keyboard focus visibility (a11y) ── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="tab"]:focus-visible,
+[tabindex]:focus-visible,
+.stTabs [data-baseweb="tab"]:focus-visible,
+.stButton > button:focus-visible,
+[data-testid="stDownloadButton"] button:focus-visible {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+.stTabs [data-baseweb="tab"]:focus-visible { outline-offset: -3px !important; }
+
 /* ── Inputs ── */
 .stSelectbox > div > div { border-radius: 6px; }
 .stSlider { padding: 0; }
@@ -239,7 +265,7 @@ section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important;
   flex-shrink: 0;
 }
 .dash-hero-text { flex: 1; min-width: 0; }
-.dash-hero-brand {
+.dash-hero .dash-hero-brand {   /* specificity beats [stMain] h1 so the H1 stays white */
   font-size: 2.25rem;
   font-weight: 800;
   letter-spacing: 0.5px;
@@ -354,7 +380,7 @@ _banner_html = f"<strong>{_first}.</strong> {_rest}" if _sep else _disclaimer_cl
 # Reusable small SVG (white people glyph) for badges / framing line.
 _people_svg = (
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" '
-    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
     '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'
     '<path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
 )
@@ -408,11 +434,11 @@ st.markdown(f"""
 <div class="dash-hero">
   <div class="dash-hero-row">
     <div class="dash-hero-text">
-      <div class="dash-hero-brand">{_brand}</div>
+      <h1 class="dash-hero-brand">{_brand}</h1>
       <div class="dash-hero-fulltitle">{_descriptor}</div>
       <div class="dash-hero-subtitle">{DASHBOARD_SUBTITLE}</div>
       <div class="dash-hero-framing">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8f1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8f1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
@@ -422,18 +448,18 @@ st.markdown(f"""
     <div class="dash-hero-badges">
       <span class="dash-pill">{_people_svg}N = {len(df)} synthetic patients</span>
       <span class="dash-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5"/>
         </svg>Academic research prototype</span>
       <span class="dash-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>Privacy-preserving demonstration</span>
     </div>
   </div>
 </div>
 <div class="dash-alert-bar">
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
     <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
   </svg>
