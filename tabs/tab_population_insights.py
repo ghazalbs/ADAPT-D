@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 import warnings
 
-from tabs.shared_components import tab_note
+from tabs.shared_components import tab_note, kpi_card
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TRAJECTORY CONFIG
@@ -296,24 +296,6 @@ def _mean_trajectory_chart(sub_df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# KPI CARD
-# ─────────────────────────────────────────────────────────────────────────────
-
-def _kpi(label: str, value: str, sub: str = "", color: str = "#2b6cb0") -> str:
-    sub_html = (
-        f"<div style='font-size:0.71rem;color:var(--clr-on-surface-hint);margin-top:2px;'>{sub}</div>"
-        if sub else ""
-    )
-    return f"""
-    <div style="background:white;border-radius:10px;padding:1.1rem;
-                box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;
-                border-top:3px solid {color};">
-      <div style="font-size:1.65rem;font-weight:700;color:#1a365d;line-height:1.2;">{value}</div>
-      <div style="font-size:0.73rem;font-weight:600;color:var(--clr-on-surface-muted);
-                  text-transform:uppercase;letter-spacing:0.05em;margin-top:3px;">{label}</div>
-      {sub_html}
-    </div>"""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -395,42 +377,27 @@ def render_tab_population_insights(df: pd.DataFrame) -> None:
     avg_non_alc   = float(sub_df[NON_ALC_COLS].sum(axis=1).mean())
 
     # ── Summary cards ─────────────────────────────────────────────────────────
-    c1, c2, c3, c4, c5 = st.columns(5)
-    with c1:
-        st.markdown(
-            _kpi("Patients in subgroup", f"{n_sub:,}",
+    _cards = [
+        kpi_card("Patients in subgroup", f"{n_sub:,}",
                  "synthetic prototype cohort", "#2b6cb0"),
-            unsafe_allow_html=True,
-        )
-    with c2:
-        st.markdown(
-            _kpi("Most common trajectory",
+        kpi_card("Most common trajectory",
                  top_label.replace(": ", ":<br>"),
                  f"avg {means[top_col]*100:.1f}%",
                  top_color),
-            unsafe_allow_html=True,
-        )
-    with c3:
-        st.markdown(
-            _kpi("Avg ALC-related prob.",
+        kpi_card("Avg ALC-related prob.",
                  f"{avg_alc*100:.1f}%",
                  "community return + high need", "#3498db"),
-            unsafe_allow_html=True,
-        )
-    with c4:
-        st.markdown(
-            _kpi("Avg high-need prob.",
+        kpi_card("Avg high-need prob.",
                  f"{avg_high_need*100:.1f}%",
                  "ALC + non-ALC high-need", "#e74c3c"),
-            unsafe_allow_html=True,
-        )
-    with c5:
-        st.markdown(
-            _kpi("Avg non-ALC prob.",
+        kpi_card("Avg non-ALC prob.",
                  f"{avg_non_alc*100:.1f}%",
                  "community-oriented + high-need", "#27ae60"),
-            unsafe_allow_html=True,
-        )
+    ]
+    st.markdown(
+        f'<div class="kpi-grid">{"".join(_cards)}</div>',
+        unsafe_allow_html=True,
+    )
 
     if small_n:
         st.warning(

@@ -12,7 +12,7 @@ import io
 
 from config import RISK_COLORS, UNCERTAINTY_COLORS, CLINICAL_CAUTION
 from data_loader import TRAJ_COLS, TRAJ_LABELS, TRAJ_COLORS
-from tabs.shared_components import tab_note
+from tabs.shared_components import tab_note, kpi_card
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS
@@ -30,26 +30,6 @@ def _badge(text: str, color_map: dict) -> str:
         f'<span aria-hidden="true" style="width:8px;height:8px;border-radius:50%;'
         f'background:{color};flex-shrink:0;"></span>{text}</span>'
     )
-
-
-def _card(label: str, value: str, sublabel: str = "", border: str = "#2b6cb0") -> str:
-    sub_html = (
-        f"<div style='font-size:0.72rem;color:var(--clr-text-muted);margin-top:2px;'>{sublabel}</div>"
-        if sublabel else ""
-    )
-    return f"""
-    <div style="background:var(--clr-bg-primary);
-                border:1px solid var(--clr-border);border-left:4px solid {border};
-                border-radius:8px;padding:1rem 1.1rem;height:100%;">
-      <div style="font-size:0.68rem;font-weight:500;color:var(--clr-text-muted);
-                  text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">
-        {label}
-      </div>
-      <div style="font-size:1.2rem;font-weight:500;color:var(--clr-text-primary);line-height:1.25;">
-        {value}
-      </div>
-      {sub_html}
-    </div>"""
 
 
 def _section_header(title: str) -> str:
@@ -344,45 +324,30 @@ def render_tab1(df: pd.DataFrame):
     risk_color   = RISK_COLORS.get(patient["risk_category"], "#718096")
     uncert_color = UNCERTAINTY_COLORS.get(patient["uncertainty_flag"], "#718096")
 
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-    with c1:
-        st.markdown(_card(
-            "Most likely trajectory",
-            patient["top1_trajectory"].replace(": ", ":<br>"),
-            border=top1_color,
-        ), unsafe_allow_html=True)
-    with c2:
-        st.markdown(_card(
-            "Predicted probability",
-            f"{patient['top1_prob']:.0%}",
-            "of top trajectory",
-            border="#2b6cb0",
-        ), unsafe_allow_html=True)
-    with c3:
-        st.markdown(_card(
-            "Second likely trajectory",
-            patient["top2_trajectory"].replace(": ", ":<br>"),
-            border=TRAJ_COLORS.get(patient["top2_col"], "#718096"),
-        ), unsafe_allow_html=True)
-    with c4:
-        st.markdown(_card(
-            "Probability gap",
-            f"{patient['prob_gap']:.0%}",
-            "Top-1 minus top-2",
-            border="#718096",
-        ), unsafe_allow_html=True)
-    with c5:
-        st.markdown(_card(
-            "Risk band",
-            _badge(patient["risk_category"], RISK_COLORS),
-            border=risk_color,
-        ), unsafe_allow_html=True)
-    with c6:
-        st.markdown(_card(
-            "Prediction confidence",
-            _badge(patient["uncertainty_flag"], UNCERTAINTY_COLORS),
-            border=uncert_color,
-        ), unsafe_allow_html=True)
+    _cards = [
+        kpi_card("Most likely trajectory",
+                 patient["top1_trajectory"].replace(": ", ":<br>"),
+                 accent=top1_color, variant="left"),
+        kpi_card("Predicted probability",
+                 f"{patient['top1_prob']:.0%}", "of top trajectory",
+                 accent="#2b6cb0", variant="left"),
+        kpi_card("Second likely trajectory",
+                 patient["top2_trajectory"].replace(": ", ":<br>"),
+                 accent=TRAJ_COLORS.get(patient["top2_col"], "#718096"), variant="left"),
+        kpi_card("Probability gap",
+                 f"{patient['prob_gap']:.0%}", "Top-1 minus top-2",
+                 accent="#718096", variant="left"),
+        kpi_card("Risk band",
+                 _badge(patient["risk_category"], RISK_COLORS),
+                 accent=risk_color, variant="left"),
+        kpi_card("Prediction confidence",
+                 _badge(patient["uncertainty_flag"], UNCERTAINTY_COLORS),
+                 accent=uncert_color, variant="left"),
+    ]
+    st.markdown(
+        f'<div class="kpi-grid kpi-cols-6">{"".join(_cards)}</div>',
+        unsafe_allow_html=True,
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
