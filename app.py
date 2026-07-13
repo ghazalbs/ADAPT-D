@@ -185,8 +185,16 @@ section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important;
 /* ── Tab strip ── */
 .stTabs [data-baseweb="tab-list"] {
   gap: 4px;
+  row-gap: 4px;
+  flex-wrap: wrap;               /* all tabs stay visible; wrap instead of overflow-scroll */
   background: transparent;
   padding-bottom: 2px;
+}
+/* Hide BaseWeb's absolutely-positioned ink bar: our navy active-tab fill is the
+   selection indicator, and the ink bar mispositions (stray line) when tabs wrap. */
+.stTabs [data-baseweb="tab-highlight"] { display: none; }
+@media (max-width: 600px) {
+  .stTabs [data-baseweb="tab"] { padding: 0.4rem 0.6rem; font-size: 0.76rem; }
 }
 .stTabs [data-baseweb="tab"] {
   background: var(--clr-bg-primary);
@@ -231,6 +239,23 @@ textarea:focus-visible,
   border-radius: 4px;
 }
 .stTabs [data-baseweb="tab"]:focus-visible { outline-offset: -3px !important; }
+
+/* ── KPI card grid — predictable responsive reflow ──
+   Desktop column count is set with a CLASS (.kpi-cols-6), not an inline custom
+   property, because Streamlit's markdown sanitiser strips custom-property-only
+   style attributes. minmax(0,1fr) + min-width:0 lets tracks shrink so card text
+   wraps instead of spilling. Steps 5/6 → 3 → 2 → 1 at the breakpoints. */
+.kpi-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.kpi-grid.kpi-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.kpi-grid > * { min-width: 0; }
+@media (max-width: 1024px) { .kpi-grid, .kpi-grid.kpi-cols-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 768px)  { .kpi-grid, .kpi-grid.kpi-cols-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px)  { .kpi-grid, .kpi-grid.kpi-cols-6 { grid-template-columns: 1fr; } }
 
 /* ── Inputs ── */
 .stSelectbox > div > div { border-radius: 6px; }
