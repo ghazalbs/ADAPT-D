@@ -302,7 +302,7 @@ def _mean_trajectory_chart(sub_df: pd.DataFrame) -> go.Figure:
 
 def _kpi(label: str, value: str, sub: str = "", color: str = "#2b6cb0") -> str:
     sub_html = (
-        f"<div style='font-size:0.71rem;color:#64748b;margin-top:2px;'>{sub}</div>"
+        f"<div style='font-size:0.71rem;color:var(--clr-on-surface-hint);margin-top:2px;'>{sub}</div>"
         if sub else ""
     )
     return f"""
@@ -310,7 +310,7 @@ def _kpi(label: str, value: str, sub: str = "", color: str = "#2b6cb0") -> str:
                 box-shadow:0 2px 8px rgba(0,0,0,0.08);text-align:center;
                 border-top:3px solid {color};">
       <div style="font-size:1.65rem;font-weight:700;color:#1a365d;line-height:1.2;">{value}</div>
-      <div style="font-size:0.73rem;font-weight:600;color:#5f6b78;
+      <div style="font-size:0.73rem;font-weight:600;color:var(--clr-on-surface-muted);
                   text-transform:uppercase;letter-spacing:0.05em;margin-top:3px;">{label}</div>
       {sub_html}
     </div>"""
@@ -447,7 +447,7 @@ def render_tab_population_insights(df: pd.DataFrame) -> None:
         '<h2 style="font-size:0.8rem;font-weight:700;color:#2d3748;'
         'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">'
         'Average Predicted Trajectory Probability Distribution</h2>'
-        f'<div style="font-size:0.76rem;color:#5f6b78;margin-bottom:0.5rem;">'
+        f'<div style="font-size:0.76rem;color:var(--clr-on-surface-muted);margin-bottom:0.5rem;">'
         f'{subgroup_desc} &nbsp;·&nbsp; bars show mean predicted probability '
         f'across all patients in the selected subgroup</div>',
         unsafe_allow_html=True,
@@ -485,7 +485,7 @@ def render_tab_population_insights(df: pd.DataFrame) -> None:
         )
         st.dataframe(tbl_df, use_container_width=True, hide_index=True, height=212)
         st.markdown(
-            '<p style="font-size:0.72rem;color:#64748b;margin-top:4px;">'
+            '<p style="font-size:0.72rem;color:var(--clr-on-surface-hint);margin-top:4px;">'
             'Planning interpretations are general heuristics only and are not clinical '
             'recommendations. Interpret alongside subgroup size and data context.'
             '</p></div>',

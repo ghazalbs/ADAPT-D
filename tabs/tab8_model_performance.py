@@ -244,7 +244,7 @@ def render_tab8(threshold_df: pd.DataFrame):
 
     if "predicted_positive_pct" in row.index:
         st.markdown(
-            f'<p style="font-size:0.76rem;color:#5f6b78;margin-top:6px;">'
+            f'<p style="font-size:0.76rem;color:var(--clr-on-surface-muted);margin-top:6px;">'
             f'At threshold {float(row["threshold"]):.2f}, '
             f'<strong>{float(row.get("predicted_positive_pct", 0)):.1f}%</strong> '
             f'of patients are flagged as positive.</p>',

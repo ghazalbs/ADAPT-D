@@ -318,10 +318,10 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
         f'<div style="background:white;border-radius:10px;padding:0.8rem 1.2rem;'
         f'margin-bottom:0.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.08);'
         f'border-left:4px solid {traj_color};">'
-        f'<span style="font-size:0.78rem;font-weight:600;color:#5f6b78;'
+        f'<span style="font-size:0.78rem;font-weight:600;color:var(--clr-on-surface-muted);'
         f'text-transform:uppercase;letter-spacing:0.06em;">Explaining prediction for: </span>'
         f'<span style="font-size:0.92rem;font-weight:700;color:#1a365d;">{traj_label}</span>'
-        f'<span style="margin-left:12px;font-size:0.82rem;color:#5f6b78;">'
+        f'<span style="margin-left:12px;font-size:0.82rem;color:var(--clr-on-surface-muted);">'
         f'(P = {traj_prob:.1%})</span></div>',
         unsafe_allow_html=True,
     )
@@ -335,10 +335,10 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
             '<h2 style="font-size:0.8rem;font-weight:700;color:#2d3748;'
             'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">'
             'Feature Contributions (SHAP Values)</h2>'
-            '<div style="font-size:0.75rem;color:#5f6b78;margin-bottom:8px;">'
-            '<span style="color:#e74c3c;font-weight:600;">▲ Red bars</span>'
+            '<div style="font-size:0.75rem;color:var(--clr-on-surface-muted);margin-bottom:8px;">'
+            '<span style="color:var(--status-red-text);font-weight:600;">▲ Red bars</span>'
             ' increase trajectory risk &nbsp;|&nbsp; '
-            '<span style="color:#3498db;font-weight:600;">▼ Blue bars</span>'
+            '<span style="color:var(--status-blue-text);font-weight:600;">▼ Blue bars</span>'
             ' reduce trajectory risk</div>',
             unsafe_allow_html=True,
         )
@@ -357,7 +357,7 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
             '<h2 style="font-size:0.8rem;font-weight:700;color:#2d3748;'
             'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">'
             'Contribution by Clinical Domain</h2>'
-            '<div style="font-size:0.72rem;color:#64748b;margin-bottom:6px;">'
+            '<div style="font-size:0.72rem;color:var(--clr-on-surface-hint);margin-bottom:6px;">'
             '% share of total |SHAP| · hover for sum(|SHAP|)</div>',
             unsafe_allow_html=True,
         )
@@ -376,7 +376,7 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
                 '<h2 style="font-size:0.8rem;font-weight:700;color:#2d3748;'
                 'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">'
                 'Contribution by Andersen Subconstruct</h2>'
-                '<div style="font-size:0.72rem;color:#64748b;margin-bottom:6px;">'
+                '<div style="font-size:0.72rem;color:var(--clr-on-surface-hint);margin-bottom:6px;">'
                 '% share of total |SHAP| · hover for major construct &amp; sum(|SHAP|)</div>',
                 unsafe_allow_html=True,
             )
@@ -395,7 +395,7 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
         f'<div style="background:linear-gradient(135deg,#ebf8ff,#e6f3ff);'
         f'border-left:4px solid #2b6cb0;border-radius:0 10px 10px 0;'
         f'padding:1rem 1.3rem;margin-bottom:1rem;">'
-        f'<h2 style="font-size:0.75rem;font-weight:700;color:#2b6cb0;'
+        f'<h2 style="font-size:0.75rem;font-weight:700;color:var(--status-blue-text);'
         f'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;">'
         f'Plain-Language Driver Summary</h2>'
         f'<p style="color:#2d3748;font-size:0.88rem;line-height:1.65;margin:0;">'
@@ -409,13 +409,14 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
     top_prot = feat_df.nsmallest(5, "shap_value")
 
     def _feature_item(row, increasing: bool) -> str:
-        dot_color = "#e74c3c" if increasing else "#3498db"
+        # AA-safe text shades of the vivid red/blue fills (meaning preserved).
+        dot_color = "var(--status-red-text)" if increasing else "var(--status-blue-text)"
         # Non-colour direction indicator: ▲ increases risk, ▼ reduces risk.
         glyph    = "▲" if increasing else "▼"
         glyph_sr = "increases risk" if increasing else "reduces risk"
         implication = str(row.get("decision_implication", "")).strip()
         implication_html = (
-            f'<div style="font-size:0.74rem;color:#5f6b78;margin-top:2px;">'
+            f'<div style="font-size:0.74rem;color:var(--clr-on-surface-muted);margin-top:2px;">'
             f'{implication[:120]}{"…" if len(implication) > 120 else ""}'
             f'</div>'
         ) if implication else ""
@@ -427,7 +428,7 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
             f'<div>'
             f'<span style="font-size:0.83rem;font-weight:600;color:#2d3748;">'
             f'{row["feature_label"]}</span>'
-            f'<span style="font-size:0.78rem;color:#5f6b78;margin-left:6px;">'
+            f'<span style="font-size:0.78rem;color:var(--clr-on-surface-muted);margin-left:6px;">'
             f'({row["shap_value"]:+.3f})</span>'
             f'{implication_html}'
             f'</div></div>'
@@ -437,7 +438,7 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
         st.markdown(
             '<div style="background:white;border-radius:10px;padding:1.2rem;'
             'box-shadow:0 2px 8px rgba(0,0,0,0.08);">'
-            '<h2 style="font-size:0.8rem;font-weight:700;color:#c0392b;'
+            '<h2 style="font-size:0.8rem;font-weight:700;color:var(--status-red-text);'
             'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.8rem;">'
             '▲ Top Risk-Increasing Factors</h2>',
             unsafe_allow_html=True,
@@ -450,7 +451,7 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
         st.markdown(
             '<div style="background:white;border-radius:10px;padding:1.2rem;'
             'box-shadow:0 2px 8px rgba(0,0,0,0.08);">'
-            '<h2 style="font-size:0.8rem;font-weight:700;color:#2b6cb0;'
+            '<h2 style="font-size:0.8rem;font-weight:700;color:var(--status-blue-text);'
             'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.8rem;">'
             '▼ Top Protective / Risk-Reducing Factors</h2>',
             unsafe_allow_html=True,
@@ -473,7 +474,7 @@ def render_tab3(patients_df: pd.DataFrame, shap_df: pd.DataFrame):
                     f'<div style="display:flex;gap:8px;margin-bottom:4px;">'
                     f'<span style="font-size:0.82rem;font-weight:600;color:#2d3748;min-width:180px;">'
                     f'{row["andersen_major_construct"]}</span>'
-                    f'<span style="font-size:0.82rem;color:#5f6b78;">'
+                    f'<span style="font-size:0.82rem;color:var(--clr-on-surface-muted);">'
                     f'{row["andersen_subconstruct"]}</span></div>',
                     unsafe_allow_html=True,
                 )

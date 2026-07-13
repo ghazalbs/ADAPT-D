@@ -193,7 +193,7 @@ def render_tab7(patients_df: pd.DataFrame, fairness_df: pd.DataFrame):
         st.markdown(
             f'<div style="background:#fff5f5;border-left:4px solid #e74c3c;'
             f'border-radius:0 8px 8px 0;padding:0.75rem 1.1rem;margin-bottom:1rem;">'
-            f'<strong style="color:#c0392b;">⚠ Equity Warning:</strong>'
+            f'<strong style="color:var(--status-red-text);">⚠ Equity Warning:</strong>'
             f'<span style="color:#742a2a;font-size:0.85rem;"> AUC parity outside the '
             f'{PARITY_LO:.0%}–{PARITY_HI:.0%} acceptable range for: '
             f'{"; ".join(warn_items)}.</span></div>',
@@ -203,7 +203,7 @@ def render_tab7(patients_df: pd.DataFrame, fairness_df: pd.DataFrame):
         st.markdown(
             '<div style="background:#f0fff4;border-left:4px solid #27ae60;'
             'border-radius:0 8px 8px 0;padding:0.65rem 1rem;margin-bottom:1rem;">'
-            f'<span style="color:#276749;font-size:0.85rem;">✓ No AUC parity disparities '
+            f'<span style="color:var(--status-green-text);font-size:0.85rem;">✓ No AUC parity disparities '
             f'outside the {PARITY_LO:.0%}–{PARITY_HI:.0%} range for the selected filters.'
             '</span></div>',
             unsafe_allow_html=True,
@@ -263,7 +263,7 @@ def render_tab7(patients_df: pd.DataFrame, fairness_df: pd.DataFrame):
     )
     st.dataframe(style, use_container_width=True, height=min(350, 80 + 38 * len(table_df)))
     st.markdown(
-        '<p style="font-size:0.72rem;color:#64748b;margin-top:4px;">'
+        '<p style="font-size:0.72rem;color:var(--clr-on-surface-hint);margin-top:4px;">'
         'Parity ratio = group metric ÷ reference metric. '
         f'Green shading: 0.95–1.05. Red shading: outside {PARITY_LO:.0%}–{PARITY_HI:.0%}.'
         '</p></div>',
@@ -365,7 +365,7 @@ def render_tab7(patients_df: pd.DataFrame, fairness_df: pd.DataFrame):
         '<div style="font-size:0.78rem;font-weight:700;color:#2d3748;'
         'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">'
         'Predicted ALC High-Need Rate by Subgroup</div>'
-        '<div style="font-size:0.72rem;color:#64748b;margin-bottom:6px;">'
+        '<div style="font-size:0.72rem;color:var(--clr-on-surface-hint);margin-bottom:6px;">'
         'Based only on the 100 synthetic prototype patients — illustrative, not a real '
         'population rate.</div>',
         unsafe_allow_html=True,

@@ -77,10 +77,31 @@ st.markdown("""
 /* ── Force light mode — overrides OS/browser dark-mode preference ── */
 :root {
   color-scheme: light;
-  --clr-text-primary:   #1a202c;
+
+  /* ── Layer 1 · Primitive brand hues — vivid; fills, dots, borders, chart marks ── */
+  --status-amber:      #f39c12;   /* Non-ALC: High-Need   */
+  --status-green:      #27ae60;   /* Non-ALC: Community    */
+  --status-blue:       #3498db;   /* ALC: Community Return */
+  --status-red:        #e74c3c;   /* ALC: High-Need        */
+
+  /* ── Layer 2 · Semantic tokens — every text token AA (>=4.5:1) on #fff AND
+        #f0f4f8 AND the tinted card surfaces. Status-text tokens are darker
+        shades of the matching hue (meaning preserved). ── */
+  --clr-on-surface:        #1a202c;
+  --clr-on-surface-muted:  #5f6b78;   /* 4.9:1 page */
+  --clr-on-surface-hint:   #616e7c;   /* 4.7:1 page */
+  --status-amber-text:     #8a5a00;
+  --status-green-text:     #1e7a45;
+  --status-blue-text:      #2b6cb0;
+  --status-red-text:       #c0392b;
+  --focus-ring:            #2563eb;
+
+  /* Back-compat aliases (names referenced across tabs) */
+  --clr-text-primary:   var(--clr-on-surface);
   --clr-text-secondary: #4a5568;
-  --clr-text-muted:     #5f6b78;   /* AA-compliant on white (5.4:1) — was #718096 (4.0:1) */
-  --clr-text-hint:      #64748b;   /* AA-compliant tertiary (4.8:1 white) */
+  --clr-text-muted:     var(--clr-on-surface-muted);
+  --clr-text-hint:      var(--clr-on-surface-hint);
+
   --clr-bg-primary:     #ffffff;
   --clr-bg-secondary:   #f7fafc;
   --clr-bg-page:        #f0f4f8;
@@ -205,7 +226,7 @@ textarea:focus-visible,
 .stTabs [data-baseweb="tab"]:focus-visible,
 .stButton > button:focus-visible,
 [data-testid="stDownloadButton"] button:focus-visible {
-  outline: 3px solid #2563eb !important;
+  outline: 3px solid var(--focus-ring) !important;
   outline-offset: 2px !important;
   border-radius: 4px;
 }
