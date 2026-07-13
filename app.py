@@ -77,9 +77,31 @@ st.markdown("""
 /* ── Force light mode — overrides OS/browser dark-mode preference ── */
 :root {
   color-scheme: light;
-  --clr-text-primary:   #1a202c;
+
+  /* ── Layer 1 · Primitive brand hues — vivid; fills, dots, borders, chart marks ── */
+  --status-amber:      #f39c12;   /* Non-ALC: High-Need   */
+  --status-green:      #27ae60;   /* Non-ALC: Community    */
+  --status-blue:       #3498db;   /* ALC: Community Return */
+  --status-red:        #e74c3c;   /* ALC: High-Need        */
+
+  /* ── Layer 2 · Semantic tokens — every text token AA (>=4.5:1) on #fff AND
+        #f0f4f8 AND the tinted card surfaces. Status-text tokens are darker
+        shades of the matching hue (meaning preserved). ── */
+  --clr-on-surface:        #1a202c;
+  --clr-on-surface-muted:  #5f6b78;   /* 4.9:1 page */
+  --clr-on-surface-hint:   #616e7c;   /* 4.7:1 page */
+  --status-amber-text:     #8a5a00;
+  --status-green-text:     #1e7a45;
+  --status-blue-text:      #2b6cb0;
+  --status-red-text:       #c0392b;
+  --focus-ring:            #2563eb;
+
+  /* Back-compat aliases (names referenced across tabs) */
+  --clr-text-primary:   var(--clr-on-surface);
   --clr-text-secondary: #4a5568;
-  --clr-text-muted:     #718096;
+  --clr-text-muted:     var(--clr-on-surface-muted);
+  --clr-text-hint:      var(--clr-on-surface-hint);
+
   --clr-bg-primary:     #ffffff;
   --clr-bg-secondary:   #f7fafc;
   --clr-bg-page:        #f0f4f8;
@@ -101,20 +123,28 @@ html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
 .main { background-color: var(--clr-bg-page); }
 .block-container { color: var(--clr-text-primary); }
 
-/* Default dark text for body copy, headings, markdown, captions, list items.
+/* Default dark text for body copy, markdown, captions, list items.
    (Scoped to the main area so the navy sidebar below keeps its white text.) */
-[data-testid="stMain"] h1,
-[data-testid="stMain"] h2,
-[data-testid="stMain"] h3,
-[data-testid="stMain"] h4,
-[data-testid="stMain"] h5,
-[data-testid="stMain"] h6,
 [data-testid="stMain"] p,
 [data-testid="stMain"] li,
 [data-testid="stMain"] label,
 [data-testid="stMain"] .stMarkdown,
 [data-testid="stCaptionContainer"] {
   color: var(--clr-text-primary) !important;
+}
+/* Headings: default dark, but WITHOUT !important so hand-authored inline colours
+   (white hero title, coloured card eyebrows) win. No native markdown headings
+   exist in this app, so this only affects headings we inject. margin reset keeps
+   converted div→heading titles visually identical. */
+[data-testid="stMain"] h1,
+[data-testid="stMain"] h2,
+[data-testid="stMain"] h3,
+[data-testid="stMain"] h4,
+[data-testid="stMain"] h5,
+[data-testid="stMain"] h6 {
+  color: var(--clr-text-primary);
+  margin: 0;
+  font-family: inherit;
 }
 
 /* Widget labels (selectbox / slider / etc.) in the main area — keep dark */
@@ -155,8 +185,16 @@ section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important;
 /* ── Tab strip ── */
 .stTabs [data-baseweb="tab-list"] {
   gap: 4px;
+  row-gap: 4px;
+  flex-wrap: wrap;               /* all tabs stay visible; wrap instead of overflow-scroll */
   background: transparent;
   padding-bottom: 2px;
+}
+/* Hide BaseWeb's absolutely-positioned ink bar: our navy active-tab fill is the
+   selection indicator, and the ink bar mispositions (stray line) when tabs wrap. */
+.stTabs [data-baseweb="tab-highlight"] { display: none; }
+@media (max-width: 600px) {
+  .stTabs [data-baseweb="tab"] { padding: 0.4rem 0.6rem; font-size: 0.76rem; }
 }
 .stTabs [data-baseweb="tab"] {
   background: var(--clr-bg-primary);
@@ -184,6 +222,40 @@ section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important;
   paint-order: normal !important;
 }
 .js-plotly-plot text.node-label { fill: #111827 !important; }
+
+/* ── Keyboard focus visibility (a11y) ── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="tab"]:focus-visible,
+[tabindex]:focus-visible,
+.stTabs [data-baseweb="tab"]:focus-visible,
+.stButton > button:focus-visible,
+[data-testid="stDownloadButton"] button:focus-visible {
+  outline: 3px solid var(--focus-ring) !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+.stTabs [data-baseweb="tab"]:focus-visible { outline-offset: -3px !important; }
+
+/* ── KPI card grid — predictable responsive reflow ──
+   Desktop column count is set with a CLASS (.kpi-cols-6), not an inline custom
+   property, because Streamlit's markdown sanitiser strips custom-property-only
+   style attributes. minmax(0,1fr) + min-width:0 lets tracks shrink so card text
+   wraps instead of spilling. Steps 5/6 → 3 → 2 → 1 at the breakpoints. */
+.kpi-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.kpi-grid.kpi-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.kpi-grid > * { min-width: 0; }
+@media (max-width: 1024px) { .kpi-grid, .kpi-grid.kpi-cols-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 768px)  { .kpi-grid, .kpi-grid.kpi-cols-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px)  { .kpi-grid, .kpi-grid.kpi-cols-6 { grid-template-columns: 1fr; } }
 
 /* ── Inputs ── */
 .stSelectbox > div > div { border-radius: 6px; }
@@ -239,7 +311,7 @@ section[data-testid="stSidebar"] .stSelectbox label { color: #cbd5e0 !important;
   flex-shrink: 0;
 }
 .dash-hero-text { flex: 1; min-width: 0; }
-.dash-hero-brand {
+.dash-hero .dash-hero-brand {   /* specificity beats [stMain] h1 so the H1 stays white */
   font-size: 2.25rem;
   font-weight: 800;
   letter-spacing: 0.5px;
@@ -354,7 +426,7 @@ _banner_html = f"<strong>{_first}.</strong> {_rest}" if _sep else _disclaimer_cl
 # Reusable small SVG (white people glyph) for badges / framing line.
 _people_svg = (
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" '
-    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
     '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'
     '<path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'
 )
@@ -408,11 +480,11 @@ st.markdown(f"""
 <div class="dash-hero">
   <div class="dash-hero-row">
     <div class="dash-hero-text">
-      <div class="dash-hero-brand">{_brand}</div>
+      <h1 class="dash-hero-brand">{_brand}</h1>
       <div class="dash-hero-fulltitle">{_descriptor}</div>
       <div class="dash-hero-subtitle">{DASHBOARD_SUBTITLE}</div>
       <div class="dash-hero-framing">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8f1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8f1fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
@@ -422,18 +494,18 @@ st.markdown(f"""
     <div class="dash-hero-badges">
       <span class="dash-pill">{_people_svg}N = {len(df)} synthetic patients</span>
       <span class="dash-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5"/>
         </svg>Academic research prototype</span>
       <span class="dash-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>Privacy-preserving demonstration</span>
     </div>
   </div>
 </div>
 <div class="dash-alert-bar">
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b7791f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
     <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
   </svg>

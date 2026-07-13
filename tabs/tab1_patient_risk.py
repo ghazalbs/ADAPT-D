@@ -12,47 +12,32 @@ import io
 
 from config import RISK_COLORS, UNCERTAINTY_COLORS, CLINICAL_CAUTION
 from data_loader import TRAJ_COLS, TRAJ_LABELS, TRAJ_COLORS
-from tabs.shared_components import tab_note
+from tabs.shared_components import tab_note, kpi_card
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _badge(text: str, color_map: dict) -> str:
-    color = color_map.get(text, "#718096")
+    color = color_map.get(text, "#5f6b78")
+    # Dark text on a light tint (AA-compliant); hue kept as an accent dot/border,
+    # and the status word itself is the non-colour indicator.
     return (
-        f'<span style="background:{color}22;color:{color};'
-        f'padding:3px 10px;border-radius:9999px;'
-        f'font-size:0.78rem;font-weight:500;">{text}</span>'
+        f'<span style="display:inline-flex;align-items:center;gap:6px;'
+        f'background:{color}1f;color:#1a202c;'
+        f'padding:3px 11px;border-radius:9999px;'
+        f'font-size:0.78rem;font-weight:600;border:1px solid {color}66;">'
+        f'<span aria-hidden="true" style="width:8px;height:8px;border-radius:50%;'
+        f'background:{color};flex-shrink:0;"></span>{text}</span>'
     )
-
-
-def _card(label: str, value: str, sublabel: str = "", border: str = "#2b6cb0") -> str:
-    sub_html = (
-        f"<div style='font-size:0.72rem;color:var(--clr-text-muted);margin-top:2px;'>{sublabel}</div>"
-        if sublabel else ""
-    )
-    return f"""
-    <div style="background:var(--clr-bg-primary);
-                border:1px solid var(--clr-border);border-left:4px solid {border};
-                border-radius:8px;padding:1rem 1.1rem;height:100%;">
-      <div style="font-size:0.68rem;font-weight:500;color:var(--clr-text-muted);
-                  text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">
-        {label}
-      </div>
-      <div style="font-size:1.2rem;font-weight:500;color:var(--clr-text-primary);line-height:1.25;">
-        {value}
-      </div>
-      {sub_html}
-    </div>"""
 
 
 def _section_header(title: str) -> str:
     return (
-        f'<div style="font-size:0.65rem;font-weight:500;color:var(--clr-text-muted);'
+        f'<h3 style="font-size:0.65rem;font-weight:500;color:var(--clr-text-muted);'
         f'text-transform:uppercase;letter-spacing:0.08em;'
         f'padding:0.6rem 0 0.2rem 0;border-bottom:1px solid var(--clr-border);">'
-        f'{title}</div>'
+        f'{title}</h3>'
     )
 
 
@@ -339,45 +324,30 @@ def render_tab1(df: pd.DataFrame):
     risk_color   = RISK_COLORS.get(patient["risk_category"], "#718096")
     uncert_color = UNCERTAINTY_COLORS.get(patient["uncertainty_flag"], "#718096")
 
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-    with c1:
-        st.markdown(_card(
-            "Most likely trajectory",
-            patient["top1_trajectory"].replace(": ", ":<br>"),
-            border=top1_color,
-        ), unsafe_allow_html=True)
-    with c2:
-        st.markdown(_card(
-            "Predicted probability",
-            f"{patient['top1_prob']:.0%}",
-            "of top trajectory",
-            border="#2b6cb0",
-        ), unsafe_allow_html=True)
-    with c3:
-        st.markdown(_card(
-            "Second likely trajectory",
-            patient["top2_trajectory"].replace(": ", ":<br>"),
-            border=TRAJ_COLORS.get(patient["top2_col"], "#718096"),
-        ), unsafe_allow_html=True)
-    with c4:
-        st.markdown(_card(
-            "Probability gap",
-            f"{patient['prob_gap']:.0%}",
-            "Top-1 minus top-2",
-            border="#718096",
-        ), unsafe_allow_html=True)
-    with c5:
-        st.markdown(_card(
-            "Risk band",
-            _badge(patient["risk_category"], RISK_COLORS),
-            border=risk_color,
-        ), unsafe_allow_html=True)
-    with c6:
-        st.markdown(_card(
-            "Prediction confidence",
-            _badge(patient["uncertainty_flag"], UNCERTAINTY_COLORS),
-            border=uncert_color,
-        ), unsafe_allow_html=True)
+    _cards = [
+        kpi_card("Most likely trajectory",
+                 patient["top1_trajectory"].replace(": ", ":<br>"),
+                 accent=top1_color, variant="left"),
+        kpi_card("Predicted probability",
+                 f"{patient['top1_prob']:.0%}", "of top trajectory",
+                 accent="#2b6cb0", variant="left"),
+        kpi_card("Second likely trajectory",
+                 patient["top2_trajectory"].replace(": ", ":<br>"),
+                 accent=TRAJ_COLORS.get(patient["top2_col"], "#718096"), variant="left"),
+        kpi_card("Probability gap",
+                 f"{patient['prob_gap']:.0%}", "Top-1 minus top-2",
+                 accent="#718096", variant="left"),
+        kpi_card("Risk band",
+                 _badge(patient["risk_category"], RISK_COLORS),
+                 accent=risk_color, variant="left"),
+        kpi_card("Prediction confidence",
+                 _badge(patient["uncertainty_flag"], UNCERTAINTY_COLORS),
+                 accent=uncert_color, variant="left"),
+    ]
+    st.markdown(
+        f'<div class="kpi-grid kpi-cols-6">{"".join(_cards)}</div>',
+        unsafe_allow_html=True,
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -388,9 +358,9 @@ def render_tab1(df: pd.DataFrame):
         st.markdown(
             '<div style="background:var(--clr-bg-primary);border:1px solid var(--clr-border);'
             'border-radius:8px;padding:1.1rem 1.2rem;">'
-            '<div style="font-size:0.79rem;font-weight:500;color:var(--clr-text-primary);'
+            '<h2 style="font-size:0.79rem;font-weight:500;color:var(--clr-text-primary);'
             'margin-bottom:0.5rem;">'
-            'Trajectory risk probability distribution</div>',
+            'Trajectory risk probability distribution</h2>',
             unsafe_allow_html=True,
         )
         st.plotly_chart(_probability_bar_chart(patient), use_container_width=True,
@@ -460,8 +430,8 @@ def render_tab1(df: pd.DataFrame):
         st.markdown(
             '<div style="background:var(--clr-bg-primary);border:1px solid var(--clr-border);'
             'border-radius:8px;padding:1.1rem 1.2rem;">'
-            '<div style="font-size:0.79rem;font-weight:500;color:var(--clr-text-primary);'
-            'margin-bottom:0.4rem;">Patient profile</div>',
+            '<h2 style="font-size:0.79rem;font-weight:500;color:var(--clr-text-primary);'
+            'margin-bottom:0.4rem;">Patient profile</h2>',
             unsafe_allow_html=True,
         )
         st.markdown(profile_html, unsafe_allow_html=True)
@@ -474,8 +444,8 @@ def render_tab1(df: pd.DataFrame):
         st.markdown(
             '<div style="background:var(--clr-bg-primary);border:1px solid var(--clr-border);'
             'border-radius:8px;padding:1.1rem 1.2rem;margin-bottom:1rem;">'
-            '<div style="font-size:0.79rem;font-weight:500;color:var(--clr-text-primary);'
-            'margin-bottom:0.2rem;">Predicted care pathway flow</div>'
+            '<h2 style="font-size:0.79rem;font-weight:500;color:var(--clr-text-primary);'
+            'margin-bottom:0.2rem;">Predicted care pathway flow</h2>'
             '<div style="font-size:0.74rem;color:var(--clr-text-muted);margin-bottom:0.4rem;">'
             'Flow widths are proportional to predicted trajectory probabilities for this patient.'
             '</div>',
@@ -491,9 +461,9 @@ def render_tab1(df: pd.DataFrame):
         f'<div style="background:var(--clr-bg-secondary);'
         f'border-left:4px solid #2b6cb0;'
         f'padding:1rem 1.3rem;margin-bottom:0.75rem;">'
-        f'<div style="font-size:0.7rem;font-weight:500;color:#2b6cb0;'
+        f'<h2 style="font-size:0.7rem;font-weight:500;color:#2b6cb0;'
         f'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;">'
-        f'AI-assisted clinical interpretation</div>'
+        f'AI-assisted clinical interpretation</h2>'
         f'<p style="color:var(--clr-text-primary);font-size:0.86rem;line-height:1.65;margin:0;">'
         f'{interpretation}</p></div>',
         unsafe_allow_html=True,

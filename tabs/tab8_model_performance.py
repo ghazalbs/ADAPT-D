@@ -192,10 +192,13 @@ def render_tab8(threshold_df: pd.DataFrame):
         ("N (total)",  f"{int(model_df['n'].iloc[0]):,}",      "#718096"),
     ]
 
-    cols = st.columns(len(summary_metrics))
-    for i, (label, value, color) in enumerate(summary_metrics):
-        with cols[i]:
-            st.markdown(_kpi_card(label, value, color=color), unsafe_allow_html=True)
+    _summary_html = "".join(
+        _kpi_card(label, value, accent=color) for label, value, color in summary_metrics
+    )
+    st.markdown(
+        f'<div class="kpi-grid kpi-cols-6">{_summary_html}</div>',
+        unsafe_allow_html=True,
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -206,9 +209,9 @@ def render_tab8(threshold_df: pd.DataFrame):
     st.markdown(
         '<div style="background:white;border-radius:10px;padding:1.3rem;'
         'box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:1rem;">'
-        '<div style="font-size:0.8rem;font-weight:700;color:#2d3748;'
+        '<h2 style="font-size:0.8rem;font-weight:700;color:#2d3748;'
         'text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.6rem;">'
-        'Interactive Threshold Analysis</div>'
+        'Interactive Threshold Analysis</h2>'
         '<div style="font-size:0.82rem;color:#4a5568;margin-bottom:0.8rem;">'
         'Adjust the decision threshold to see how recall, specificity, precision, and '
         'the number of flagged patients change. Lower thresholds capture more high-risk '
@@ -229,22 +232,25 @@ def render_tab8(threshold_df: pd.DataFrame):
 
     row = _nearest_row(model_df, threshold)
 
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
     metric_cards = [
-        (c1, "Threshold",    f"{float(row['threshold']):.2f}",     "#2b6cb0"),
-        (c2, "Recall",       f"{float(row['recall']):.3f}",        "#27ae60"),
-        (c3, "Specificity",  f"{float(row['specificity']):.3f}",   "#3498db"),
-        (c4, "Precision",    f"{float(row['precision']):.3f}",     "#f39c12"),
-        (c5, "F1 Score",     f"{float(row['f1']):.3f}",            "#8e44ad"),
-        (c6, "N Flagged",    f"{int(row.get('predicted_positive_n', 0)):,}",  "#e74c3c"),
+        ("Threshold",    f"{float(row['threshold']):.2f}",     "#2b6cb0"),
+        ("Recall",       f"{float(row['recall']):.3f}",        "#27ae60"),
+        ("Specificity",  f"{float(row['specificity']):.3f}",   "#3498db"),
+        ("Precision",    f"{float(row['precision']):.3f}",     "#f39c12"),
+        ("F1 Score",     f"{float(row['f1']):.3f}",            "#8e44ad"),
+        ("N Flagged",    f"{int(row.get('predicted_positive_n', 0)):,}",  "#e74c3c"),
     ]
-    for col, label, value, color in metric_cards:
-        with col:
-            st.markdown(_kpi_card(label, value, color=color), unsafe_allow_html=True)
+    _metric_html = "".join(
+        _kpi_card(label, value, accent=color) for label, value, color in metric_cards
+    )
+    st.markdown(
+        f'<div class="kpi-grid kpi-cols-6">{_metric_html}</div>',
+        unsafe_allow_html=True,
+    )
 
     if "predicted_positive_pct" in row.index:
         st.markdown(
-            f'<p style="font-size:0.76rem;color:#718096;margin-top:6px;">'
+            f'<p style="font-size:0.76rem;color:var(--clr-on-surface-muted);margin-top:6px;">'
             f'At threshold {float(row["threshold"]):.2f}, '
             f'<strong>{float(row.get("predicted_positive_pct", 0)):.1f}%</strong> '
             f'of patients are flagged as positive.</p>',
